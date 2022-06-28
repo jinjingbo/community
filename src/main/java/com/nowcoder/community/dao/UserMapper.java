@@ -5,7 +5,7 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface UserMapper {
-// userMapper申请数据库信息，在user-mapper.xml中实现sql语句信息。
+// userMapper申明接口，链接数据库信息，在user-mapper.xml中实现sql语句信息。
     User selectById(int id);
 
     User selectByName(String username);
