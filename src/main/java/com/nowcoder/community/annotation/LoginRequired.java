@@ -17,7 +17,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)////申明这个注解只有方法可以用
 @Retention(RetentionPolicy.RUNTIME)//这个注解运行时可以用
 public @interface LoginRequired {
-
+//
 }
 /*
 * 这个项目加此注解：可以防止没有登录的时候，拦截，不能查看比如user/setting等等页面*/
