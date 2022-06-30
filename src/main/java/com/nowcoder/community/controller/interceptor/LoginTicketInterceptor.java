@@ -35,6 +35,7 @@ public class LoginTicketInterceptor implements HandlerInterceptor {
     @Autowired
     private HostHolder hostHolder;
 
+    //登录之前
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         // 知道request,从cookie中获取凭证
@@ -68,11 +69,12 @@ public class LoginTicketInterceptor implements HandlerInterceptor {
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
         User user = hostHolder.getUser();//当前线程持有的user
         if (user != null && modelAndView != null) {
-            modelAndView.addObject("loginUser", user);
+            modelAndView.addObject("loginUser", user);////////////拦截器，此时登录了之后，把user认为是loginUser,注入进model,在templates中使用loginUser
             //此时表示登录了，在index.html中，可以加入if判断是否有了loginUser，来判断是否登录成功
         }
     }
 
+    //注销之后
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
         hostHolder.clear();

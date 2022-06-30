@@ -116,10 +116,10 @@ public class UserController {
         }
     }
 
-    // 修改密码
+    // 登录之后，用户设置里修改密码，所以是存在了user的
     @RequestMapping(path = "/updatePassword", method = RequestMethod.POST)
     public String updatePassword(String oldPassword, String newPassword, Model model) {
-        User user = hostHolder.getUser();
+        User user = hostHolder.getUser();//得到此线程的user
         Map<String, Object> map = userService.updatePassword(user.getId(), oldPassword, newPassword);
         if (map == null || map.isEmpty()) {//修改成功，转到登录页面
             return "redirect:/logout";
@@ -127,7 +127,7 @@ public class UserController {
             //
             model.addAttribute("oldPasswordMsg", map.get("oldPasswordMsg"));
             model.addAttribute("newPasswordMsg", map.get("newPasswordMsg"));
-            return "/site/setting";//修改setting.html
+            return "/site/setting";//还有动态修改setting.html
         }
     }
 

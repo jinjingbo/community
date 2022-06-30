@@ -30,7 +30,7 @@ public class CommunityUtil {
         }
         return DigestUtils.md5DigestAsHex(key.getBytes());
     }
-
+//json转化为字符串输出
     public static String getJSONString(int code, String msg, Map<String, Object> map) {
         JSONObject json = new JSONObject();
         json.put("code", code);
@@ -51,6 +51,7 @@ public class CommunityUtil {
         return getJSONString(code, null, null);
     }
 
+    //test
     public static void main(String[] args) {
         Map<String, Object> map = new HashMap<>();
         map.put("name", "zhangsan");

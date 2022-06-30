@@ -217,13 +217,13 @@ public class UserService implements CommunityConstant {
 
         // 重置密码
         password = CommunityUtil.md5(password + user.getSalt());
-        userMapper.updatePassword(user.getId(), password);
+        userMapper.updatePassword(user.getId(), password);//map中修改密码
 
         map.put("user", user);
         return map;
     }
 
-    // 修改密码，，，，类似重置密码
+    // 修改密码，，，，类似重置密码，参数不同而已
     public Map<String, Object> updatePassword(int userId, String oldPassword, String newPassword) {
         Map<String, Object> map = new HashMap<>();
 
@@ -253,6 +253,9 @@ public class UserService implements CommunityConstant {
     }
 
 
+    public User findUserByName(String username) {
+        return userMapper.selectByName(username);
+    }
 
 
 }

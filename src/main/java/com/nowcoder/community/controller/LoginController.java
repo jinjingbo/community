@@ -192,7 +192,7 @@ public class LoginController implements CommunityConstant {
     //
     // 忘记密码页面
     /*
-    * 1.等打开忘记我页面
+    * 1.打开忘记密码页面
     * 2.读取邮箱（判断邮箱是否已经注册，severz中）
     * 3.发邮件，邮件中是验证码
     * 4.输入验证码，比对是不是一致的
@@ -202,7 +202,7 @@ public class LoginController implements CommunityConstant {
     @RequestMapping(path = "/forget", method = RequestMethod.GET)
     public String getForgetPage() {
         return "/site/forget";
-    }
+    }//////////////1。能够访问这个页面
 
     // 获取验证码
     @RequestMapping(path = "/forget/code", method = RequestMethod.GET)
@@ -212,26 +212,27 @@ public class LoginController implements CommunityConstant {
             return CommunityUtil.getJSONString(1, "邮箱不能为空！");
         }
         //
-        // 发送邮件
+        // 发送邮件，发送验证码
         Context context = new Context();
         context.setVariable("email", email);
-        String code = CommunityUtil.generateUUID().substring(0, 4);
+        String code = CommunityUtil.generateUUID().substring(0, 4);//随机四位验证码
         context.setVariable("verifyCode", code);
         String content = templateEngine.process("/mail/forget", context);
         mailClient.sendMail(email, "找回密码", content);
 
 
-        // 保存验证码
+        // 保存验证码，在sessin中暂时存放
         session.setAttribute("verifyCode", code);
 
         return CommunityUtil.getJSONString(0);
     }
 
-    // 重置密码
+    // 上面发送完验证码后，重置新密码
     @RequestMapping(path = "/forget/password", method = RequestMethod.POST)
     public String resetPassword(String email, String verifyCode, String password, Model model, HttpSession session) {
         String code = (String) session.getAttribute("verifyCode");
         if (StringUtils.isBlank(verifyCode) || StringUtils.isBlank(code) || !code.equalsIgnoreCase(verifyCode)) {
+            //这里验证了验证码的正确性
             model.addAttribute("codeMsg", "验证码错误!");
             return "/site/forget";
         }

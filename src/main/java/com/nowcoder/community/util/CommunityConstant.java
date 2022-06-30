@@ -30,4 +30,17 @@ public interface CommunityConstant {
      * 记住状态的登录凭证超时时间
      */
     int REMEMBER_EXPIRED_SECONDS = 3600 * 24 * 100;
+
+///见帖子表，这个常量可以区别评论是对什么评论的，是对帖子直接评论还是对评论的评论
+    /**
+     * 实体类型: 帖子，是回帖
+     */
+    int ENTITY_TYPE_POST = 1;
+
+    /**
+     * 实体类型: 评论，是评论
+     */
+    int ENTITY_TYPE_COMMENT = 2;
+
+
 }
