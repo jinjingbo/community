@@ -1,47 +1,23 @@
 package com.nowcoder.community.controller;
 
-//import com.google.code.kaptcha.Producer;
-//import com.nowcoder.community.entity.User;
-//import com.nowcoder.community.service.UserService;
-//import com.nowcoder.community.util.CommunityConstant;
-//import com.nowcoder.community.util.CommunityUtil;
-//import org.apache.commons.lang3.StringUtils;
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.beans.factory.annotation.Value;
-//import org.springframework.stereotype.Controller;
-//import org.springframework.ui.Model;
-//import org.springframework.web.bind.annotation.*;
-//
-//import javax.imageio.ImageIO;
-//import javax.naming.Context;
-//import javax.servlet.http.Cookie;
-//import javax.servlet.http.HttpServletResponse;
-//import javax.servlet.http.HttpSession;
-//import java.awt.image.BufferedImage;
-//import java.io.IOException;
-//import java.io.OutputStream;
-//import java.util.Map;
-
 import com.google.code.kaptcha.Producer;
 import com.nowcoder.community.entity.User;
 import com.nowcoder.community.service.UserService;
 import com.nowcoder.community.util.CommunityConstant;
 import com.nowcoder.community.util.CommunityUtil;
 import com.nowcoder.community.util.MailClient;
-import com.nowcoder.community.util.MailClient;
+import com.nowcoder.community.util.RedisKeyUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
-
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.Cookie;
@@ -51,6 +27,8 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
 /**
  * @description：TODO
  * @author： jinji
@@ -72,6 +50,9 @@ public class LoginController implements CommunityConstant {
 
     @Autowired
     private MailClient mailClient;//发验证码用
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @Value("${server.servlet.context-path}")
     private String contextPath;
@@ -128,17 +109,46 @@ public class LoginController implements CommunityConstant {
         return "/site/operate-result";
     }
 
-    //生产验证码，放在session中
+    ////生产验证码，放在session中,,,,,,,,,,,,,,,,,,,,,,,进行优化，把验证码放在redis中缓存
+    //@RequestMapping(path = "/kaptcha", method = RequestMethod.GET)
+    //public void getKaptcha(HttpServletResponse response, HttpSession session) {
+    //    // 生成验证码,生成的是图片信息，存到session页面交互 里用的
+    //    String text = kaptchaProducer.createText();
+    //    BufferedImage image = kaptchaProducer.createImage(text);
+    //
+    //    // 将验证码存入session
+    //    session.setAttribute("kaptcha", text);
+    //
+    //    // 将图片输出给浏览器
+    //    response.setContentType("image/png");
+    //    try {
+    //        OutputStream os = response.getOutputStream();
+    //        ImageIO.write(image, "png", os);
+    //    } catch (IOException e) {
+    //        logger.error("响应验证码失败:" + e.getMessage());
+    //    }
+    //}
+
     @RequestMapping(path = "/kaptcha", method = RequestMethod.GET)
-    public void getKaptcha(HttpServletResponse response, HttpSession session) {
-        // 生成验证码,生成的是图片信息，存到session页面交互 里用的
+    public void getKaptcha(HttpServletResponse response/*, HttpSession session*/) {
+        // 生成验证码
         String text = kaptchaProducer.createText();
         BufferedImage image = kaptchaProducer.createImage(text);
 
         // 将验证码存入session
-        session.setAttribute("kaptcha", text);
+        // session.setAttribute("kaptcha", text);
 
-        // 将图片输出给浏览器
+        // 验证码的归属，cookie中存验证码的owener
+        String kaptchaOwner = CommunityUtil.generateUUID();
+        Cookie cookie = new Cookie("kaptchaOwner", kaptchaOwner);
+        cookie.setMaxAge(60);
+        cookie.setPath(contextPath);
+        response.addCookie(cookie);//添加给客户端
+        // 将验证码存入Redis
+        String redisKey = RedisKeyUtil.getKaptchaKey(kaptchaOwner);
+        redisTemplate.opsForValue().set(redisKey, text, 60, TimeUnit.SECONDS);//有效时间设置
+
+        // 将突图片输出给浏览器
         response.setContentType("image/png");
         try {
             OutputStream os = response.getOutputStream();
@@ -148,16 +158,29 @@ public class LoginController implements CommunityConstant {
         }
     }
 
+
+
     ///处理登录界面。。。。。也是用到usersever的比对账号密码功能
     @RequestMapping(path = "/login", method = RequestMethod.POST)
     /**
      * 账号，密码，验证码，是否勾上记住我（loginTicket失效时间），model，session中取验证码，如果登录成功了用cookies保存ticket
      */
     public String login(String username, String password, String code, boolean rememberme,
-                        Model model, HttpSession session, HttpServletResponse response){
+                        Model model/*, HttpSession session*/, HttpServletResponse response
+                        ,@CookieValue("kaptchaOwner") String kaptchaOwner){
         // 检查验证码
         //验证码不对，就直接返回错误，不用看数据库了
-        String kaptcha = (String) session.getAttribute("kaptcha");
+        //String kaptcha = (String) session.getAttribute("kaptcha");
+        //if (StringUtils.isBlank(kaptcha) || StringUtils.isBlank(code) || !kaptcha.equalsIgnoreCase(code)) {
+        //    model.addAttribute("codeMsg", "验证码不正确!");
+        //    return "/site/login";
+        //}
+        String kaptcha = null;
+        if (StringUtils.isNotBlank(kaptchaOwner)) {//取kaptcha
+            String redisKey = RedisKeyUtil.getKaptchaKey(kaptchaOwner);
+            kaptcha = (String) redisTemplate.opsForValue().get(redisKey);
+        }
+
         if (StringUtils.isBlank(kaptcha) || StringUtils.isBlank(code) || !kaptcha.equalsIgnoreCase(code)) {
             model.addAttribute("codeMsg", "验证码不正确!");
             return "/site/login";

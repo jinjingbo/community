@@ -11,6 +11,7 @@ import org.apache.ibatis.annotations.*;
 
 //这次访问mapper,换一种方式，不在xml中写sql,在接口中使用注解写sql
 @Mapper
+@Deprecated///////不推荐使用，用redis进行缓存了ticket,方案只要当更新后，缓存从mapper中重新取值
 ///////注解别忘记了
 public interface LoginTicketMapper {
 

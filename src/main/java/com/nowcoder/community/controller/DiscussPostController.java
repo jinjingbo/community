@@ -6,6 +6,7 @@ import com.nowcoder.community.entity.Page;
 import com.nowcoder.community.entity.User;
 import com.nowcoder.community.service.CommentService;
 import com.nowcoder.community.service.DiscussPostService;
+import com.nowcoder.community.service.LikeService;
 import com.nowcoder.community.service.UserService;
 import com.nowcoder.community.util.CommunityConstant;
 import com.nowcoder.community.util.CommunityUtil;
@@ -41,6 +42,9 @@ public class DiscussPostController implements CommunityConstant {
     @Autowired
     private CommentService commentService;
 
+    @Autowired
+    private LikeService likeService;
+
     @RequestMapping(path = "/add", method = RequestMethod.POST)
     @ResponseBody
     public String addDiscussPost(String title, String content) {
@@ -72,6 +76,15 @@ public class DiscussPostController implements CommunityConstant {
         User user=userService.findUserById(post.getUserId());
         model.addAttribute("user", user);
 
+        //对帖子的点赞处理
+        // 点赞数量
+        long likeCount = likeService.findEntityLikeCount(ENTITY_TYPE_POST, discussPostId);//1
+        model.addAttribute("likeCount", likeCount);
+        // 点赞状态//看 “我”有没有点赞
+        int likeStatus = hostHolder.getUser() == null ? 0 :
+                likeService.findEntityLikeStatus(hostHolder.getUser().getId(), ENTITY_TYPE_POST, discussPostId);
+        model.addAttribute("likeStatus", likeStatus);
+
         // 评论分页信息
         page.setLimit(5);
         page.setPath("/discuss/detail/" + discussPostId);
@@ -96,9 +109,19 @@ public class DiscussPostController implements CommunityConstant {
                 // 作者
                 commentVo.put("user", userService.findUserById(comment.getUserId()));
 
+                // 回复的点赞数量
+                likeCount = likeService.findEntityLikeCount(ENTITY_TYPE_COMMENT, comment.getId());
+                commentVo.put("likeCount", likeCount);
+                // 点赞状态
+                likeStatus = hostHolder.getUser() == null ? 0 :
+                        likeService.findEntityLikeStatus(hostHolder.getUser().getId(), ENTITY_TYPE_COMMENT, comment.getId());
+                commentVo.put("likeStatus", likeStatus);
+
                 // 回复列表，，存这个（对帖子）评论下面所以的评论（不包括这个评论），对评论的回复
                 List<Comment> replyList = commentService.findCommentsByEntity(
                         ENTITY_TYPE_COMMENT, comment.getId(), 0, Integer.MAX_VALUE);///看这里的entityType
+
+
                 // 回复VO列表
                 List<Map<String, Object>> replyVoList = new ArrayList<>();
                 if (replyList != null) {//对这个comment.getId()帖子有回复
@@ -111,6 +134,15 @@ public class DiscussPostController implements CommunityConstant {
                         // 回复目标
                         User target = reply.getTargetId() == 0 ? null : userService.findUserById(reply.getTargetId());
                         replyVo.put("target", target);
+                        //对评论的点赞处理
+                        // 点赞数量
+                        likeCount = likeService.findEntityLikeCount(ENTITY_TYPE_COMMENT, reply.getId());//comment类型
+                        replyVo.put("likeCount", likeCount);
+                        // 点赞状态
+                        likeStatus = hostHolder.getUser() == null ? 0 :
+                                likeService.findEntityLikeStatus(hostHolder.getUser().getId(), ENTITY_TYPE_COMMENT, reply.getId());
+                        replyVo.put("likeStatus", likeStatus);
+
 
                         replyVoList.add(replyVo);
                     }
@@ -127,7 +159,11 @@ public class DiscussPostController implements CommunityConstant {
             ////////有个缺点，，只是处理了评论的评论，嵌套了一层，但是评论的评论的评论就无法处理，没有考虑，
             // 改成while判断后面有没有评论，没有就不往下考虑，把多层嵌套放在循环中，定值类型也可以变成count++格式
 
-            /**上面的想法不对，1.对帖子主题的评论，叫回帖，也认为是帖子
+            /**上面的想法不对，
+             * 帖子   评论    回复（对）、、、、、、、回复也认为是评论
+             *
+             * 这个不对的饿1.@@@对帖子主题的评论，叫回帖，也认为是帖子！！！！！！！！！！！！！！111后面发现这里不对，帖子的回帖，回复的也是评论
+             * ！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
                             2.对回帖的回复才是评论
                             3.对评论的回复    还是认为是评论
                             4.所以回复只有两种：
@@ -140,6 +176,15 @@ public class DiscussPostController implements CommunityConstant {
              （不存在回帖的评论的评论！！！，，都认为是评论）！！！！！！！！！！！！！！
              只要两种类型：帖子，评论
              */
+
+
+            //综上
+            /*
+            *只要两种状态：帖子和评论
+            * 对帖子的回复是评论，对评论的回复也是评论！！！！！！！！！！！！！！！！！！！！！！！！！！！
+            *
+            *
+            * */
 
         }
 

@@ -20,6 +20,12 @@ public interface CommentMapper {
 
     //添加评论
     int insertComment(Comment comment);
+    //个人页面显示发表的comment
+    Comment selectCommentById(int id);
+
+    List<Comment> selectCommentsByUser(int userId, int offset, int limit);
+
+    int selectCountByUser(int userId);
 
 
 }
