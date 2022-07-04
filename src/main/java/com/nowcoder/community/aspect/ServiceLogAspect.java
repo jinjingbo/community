@@ -36,7 +36,14 @@ public class ServiceLogAspect {
         // 用户[127.0.0.1],在[xxx],访问了[com.nowcoder.community.service.xxx()].
         //获取此时的ip
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes == null) {////////加了消费者模式，这里为什么可能接收不到request呢
+            //因为一般的controller是调service的，但是加了生产者——消费者模式，
+            // 有些数据就直接从消费者中获取，
+            // 消费者调的service，不是根据controller调的，此就没有request的请求（request是controller调用的）
+            return;
+        }
         HttpServletRequest request = attributes.getRequest();
+
         String ip = request.getRemoteHost();
         //时间
         String now = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());

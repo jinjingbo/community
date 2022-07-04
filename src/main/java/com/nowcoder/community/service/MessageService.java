@@ -63,6 +63,28 @@ public class MessageService {
     }
 
 
+    //• 通知列表
+    //- 显示评论、点赞、关注三种类型的通知
+    //• 通知详情
+    //- 分页显示某一类主题所包含的通知
+    //• 未读消息
+    //- 在页面头部显示所有的未读消息数量
+    public Message findLatestNotice(int userId, String topic) {
+        return messageMapper.selectLatestNotice(userId, topic);
+    }
+
+    public int findNoticeCount(int userId, String topic) {
+        return messageMapper.selectNoticeCount(userId, topic);
+    }
+
+    public int findNoticeUnreadCount(int userId, String topic) {
+        return messageMapper.selectNoticeUnreadCount(userId, topic);
+    }
+
+    public List<Message> findNotices(int userId, String topic, int offset, int limit) {
+        return messageMapper.selectNotices(userId, topic, offset, limit);
+    }
+
 
 
 
