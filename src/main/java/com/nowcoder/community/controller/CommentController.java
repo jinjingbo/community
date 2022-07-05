@@ -62,6 +62,17 @@ public class CommentController implements CommunityConstant {
         }
         eventProducer.fireEvent(event);//并发实现事件发布
 
+        if (comment.getEntityType() == ENTITY_TYPE_POST) {
+            // 触发发帖事件
+            event = new Event()
+                    .setTopic(TOPIC_PUBLISH)////////////如果对帖子的评论，，回帖。。 那么记录到ES中
+                    .setUserId(comment.getUserId())
+                    .setEntityType(ENTITY_TYPE_POST)
+                    .setEntityId(discussPostId);
+            eventProducer.fireEvent(event);
+        }
+
+
         return "redirect:/discuss/detail/" + discussPostId;
     }
 
