@@ -30,4 +30,23 @@ public interface DiscussPostMapper {
     int updateCommentCount(int id, int commentCount);
 
 
+    /*
+    *
+    • 功能实现//dao,sever,controller处理
+    - 点击 置顶，修改帖子的类型。
+    - 点击“加精”、“删除”，修改帖子的状态。
+    • 权限管理//securityConfig 权限管理
+    - 版主可以执行“置顶”、“加精”操作。
+    - 管理员可以执行“删除”操作。
+    • 按钮显示//html处理
+    - 版主可以看到“置顶”、“加精”按钮。
+    - 管理员可以看到“删除”按钮。
+    * */
+
+    //@@！！对帖子的权限管理，使得能针对不能权限呈现 置顶，加精和删除等相应的功能
+    //改变状态 `type` int DEFAULT NULL COMMENT '0-普通; 1-置顶;',
+    int updateType(int id, int type);
+    //status` int DEFAULT NULL COMMENT '0-正常; 1-精华; 2-拉黑;',
+    int updateStatus(int id, int status);
+
 }

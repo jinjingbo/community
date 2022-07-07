@@ -28,6 +28,9 @@ public class RedisKeyUtil {
     private static final String PREFIX_KAPTCHA = "kaptcha";//验证码缓存优化
     private static final String PREFIX_TICKET = "ticket";//使用Redis存储登录凭证
     private static final String PREFIX_USER = "user";//处理每次请求时，都要根据凭证查询用户信息，访问的频率非常高
+    private static final String PREFIX_UV = "uv";
+    private static final String PREFIX_DAU = "dau";
+
 
     // 某个实体的赞，就是对某个帖子或者回复的赞
     // like:entity:entityType:entityId -> set(userId)
@@ -72,5 +75,24 @@ public class RedisKeyUtil {
     }
 
 
+    // 单日UV
+    public static String getUVKey(String date) {
+        return PREFIX_UV + SPLIT + date;
+    }
+
+    // 区间UV
+    public static String getUVKey(String startDate, String endDate) {
+        return PREFIX_UV + SPLIT + startDate + SPLIT + endDate;
+    }
+
+    // 单日活跃用户
+    public static String getDAUKey(String date) {
+        return PREFIX_DAU + SPLIT + date;
+    }
+
+    // 区间活跃用户
+    public static String getDAUKey(String startDate, String endDate) {
+        return PREFIX_DAU + SPLIT + startDate + SPLIT + endDate;
+    }
 
 }
