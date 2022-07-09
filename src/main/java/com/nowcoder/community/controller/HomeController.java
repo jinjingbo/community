@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,13 +33,16 @@ public class HomeController implements CommunityConstant {
 
     //首页中，显示点赞数
     @RequestMapping(path = "/index", method = RequestMethod.GET)
-    public String getIndexPage(Model model, Page page) {
+    public String getIndexPage(Model model, Page page,
+                               @RequestParam(name = "orderMode", defaultValue = "0") int orderMode) {
         // 方法调用钱,SpringMVC会自动实例化Model和Page,并将Page注入Model.
         // 所以,在thymeleaf中可以直接访问Page对象中的数据.
         page.setRows(discussPostService.findDiscussPostRows(0));
-        page.setPath("/index");
+        page.setPath("/index?orderMode=" + orderMode);///在这里判断分页标准
 
-        List<DiscussPost> list = discussPostService.findDiscussPosts(0, page.getOffset(), page.getLimit());
+        List<DiscussPost> list = discussPostService
+                .findDiscussPosts(0, page.getOffset(), page.getLimit(),orderMode);
+        /////////加入了orderMode，可以按照分数排序，下面一致，通过SQL实现了不同的排序输出到service
         //显示page.getOffset()--page.getLimit()的帖子
         List<Map<String, Object>> discussPosts = new ArrayList<>();
         if (list != null) {
@@ -56,6 +60,8 @@ public class HomeController implements CommunityConstant {
             }
         }
         model.addAttribute("discussPosts", discussPosts);
+        model.addAttribute("orderMode", orderMode);
+
         return "/index";
     }
     //服务器错误

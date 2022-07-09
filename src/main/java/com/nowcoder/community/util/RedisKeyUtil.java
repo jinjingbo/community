@@ -30,6 +30,8 @@ public class RedisKeyUtil {
     private static final String PREFIX_USER = "user";//处理每次请求时，都要根据凭证查询用户信息，访问的频率非常高
     private static final String PREFIX_UV = "uv";
     private static final String PREFIX_DAU = "dau";
+    private static final String PREFIX_POST = "post";
+
 
 
     // 某个实体的赞，就是对某个帖子或者回复的赞
@@ -94,5 +96,26 @@ public class RedisKeyUtil {
     public static String getDAUKey(String startDate, String endDate) {
         return PREFIX_DAU + SPLIT + startDate + SPLIT + endDate;
     }
+    /**
+     *
+     *
+     * @author jinjingbo
+     * @version 2022/7/7 21:44
+
+     * @return java.lang.String
+     *
+     * 最热，帖子分数处理：加精评论点赞等之后，把这个评论id存到redis的固定key中
+     *
+     * 然后定时线程异步处理（Quartz）处理，更新post分数，更新页面，更新ES数据
+     *
+     * Quartz使用，写好实体job，job内重写方法去申明定时所做的内容，一些所需的数据从redis中读取，然后更新帖子分数。
+     * 最后写config去配置实体和时间JobDetailFactoryBean，SimpleTriggerFactoryBean。   然后启动后会自行异步定时实现
+     *
+     */
+    // 帖子分数
+    public static String getPostScoreKey() {
+        return PREFIX_POST + SPLIT + "score";
+    }
+
 
 }

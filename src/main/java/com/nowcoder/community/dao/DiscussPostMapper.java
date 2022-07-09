@@ -12,7 +12,8 @@ public interface DiscussPostMapper {
 
 //在配置文件 discusspost-mapper.xml中实现方法,sql语句实现
     //返回offer-limit的贴子
-    List<DiscussPost> selectDiscussPosts(int userId, int offset, int limit);
+    List<DiscussPost> selectDiscussPosts(int userId, int offset, int limit, int orderMode);
+    //分页处理，ordermoode==0按时间排序，==11按分数排序
 
     // @Param注解用于给参数取别名,
     // 如果只有一个参数,并且在<if>里使用,则必须加别名.
@@ -49,4 +50,6 @@ public interface DiscussPostMapper {
     //status` int DEFAULT NULL COMMENT '0-正常; 1-精华; 2-拉黑;',
     int updateStatus(int id, int status);
 
+    //更新分数
+    int updateScore(int id, double score);
 }

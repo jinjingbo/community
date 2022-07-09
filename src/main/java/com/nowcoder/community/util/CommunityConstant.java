@@ -92,6 +92,11 @@ public interface CommunityConstant {
     String AUTHORITY_MODERATOR = "moderator";
 
 
+    /**
+     * 主题: 分享
+     */
+    String TOPIC_SHARE = "share";
+
 
 
 }

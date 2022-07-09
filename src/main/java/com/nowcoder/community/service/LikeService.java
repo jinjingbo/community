@@ -35,7 +35,7 @@ public class LikeService {
      * @return void
      */
     public void like(int userId, int entityType, int entityId, int entityUserId) {
-        redisTemplate.execute(new SessionCallback() {
+        redisTemplate.execute(new SessionCallback() {////////在事务中加入redis的操作，固定格式如下
             @Override
             public Object execute(RedisOperations operations) throws DataAccessException {
                 //得到key
