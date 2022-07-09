@@ -56,12 +56,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Comm
                         "/discuss/top",
                         "/discuss/wonderful"
                 )
-                .hasAnyAuthority(
+                .hasAnyAuthority(//版主
                         AUTHORITY_MODERATOR
                 )
-                .antMatchers(//删除帖子以及 UV,DAO  data页面只有管理员可以访问
+                .antMatchers(//删除帖子以及 UV,DAO  data页面只有管理员可以访问，管理员
                         "/discuss/delete",
-                        "/data/**"
+                        "/data/**",
+                        "/actuator/**"
                 )
                 .hasAnyAuthority(
                         AUTHORITY_ADMIN

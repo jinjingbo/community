@@ -24,7 +24,7 @@ public class CaffeineTests {
     @Autowired
     private DiscussPostService postService;
 
-    @Test
+    @Test//加了很多新的帖子用于测试
     public void initDataForTest() {
         for (int i = 0; i < 300000; i++) {
             DiscussPost post = new DiscussPost();
@@ -35,6 +35,17 @@ public class CaffeineTests {
             post.setScore(Math.random() * 2000);
             postService.addDiscussPost(post);
         }
+    }
+
+    @Test
+    public void deleteDataForTest(){
+        //删除最早的1000条帖子post
+        for(int i=0;i<1;i++){
+            int postId=110;//
+            postService.updateStatus(postId,2);//////mapper中总量不变，但是不会再显示。状态变成2
+        }
+
+
     }
 
     @Test
